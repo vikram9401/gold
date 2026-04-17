@@ -89,20 +89,21 @@ def send_telegram(token, chat_id, listing):
                       "caption": message, "parse_mode": "HTML"},
                 timeout=15,
             )
-            if r.ok:
+            if r.json().get("ok"):
                 return
-            print("  [warn] sendPhoto failed (" + str(r.status_code) + "), falling back to sendMessage")
+            print("  [warn] sendPhoto failed: " + r.json().get("description", "?") + ", falling back to sendMessage")
         except Exception as e:
             print("  [warn] sendPhoto exception: " + str(e) + ", falling back to sendMessage")
 
     try:
         r = requests.post(
             TELEGRAM_API.format(token=token, method="sendMessage"),
-            data={"chat_id": chat_id, "text": message, "parse_mode": "HTML"},
+            data={"chat_id": chat_id, "text": message, "parse_mode": "HTML",
+                  "disable_web_page_preview": "true"},
             timeout=15,
         )
-        if not r.ok:
-            print("  [error] sendMessage failed: " + str(r.status_code) + " " + r.text[:200])
+        if not r.json().get("ok"):
+            print("  [error] sendMessage failed: " + r.json().get("description", r.text[:200]))
     except Exception as e:
         print("  [error] sendMessage exception: " + str(e))
 
